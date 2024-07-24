@@ -1,3 +1,5 @@
+using BlockchainBlockParser.Block;
+
 namespace BlockchainBlockParser.Export;
 
 public interface IBlockchainBlockExport
