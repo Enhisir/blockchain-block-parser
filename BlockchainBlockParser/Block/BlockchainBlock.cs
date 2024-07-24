@@ -13,8 +13,7 @@ public class BlockchainBlock
     public BlockchainBlockHeader Header { get; init; } = null!;
     
     public CompactSize.CompactSize TransactionCount { get; init; }
-
-    // variable
+    
     public ImmutableList<string> Transactions { get; init; } = null!;
 
     public string CoinbaseTransaction => Transactions.First(); // remake with Validation Exception Fault

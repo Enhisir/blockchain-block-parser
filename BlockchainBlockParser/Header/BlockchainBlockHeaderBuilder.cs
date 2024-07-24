@@ -58,14 +58,14 @@ internal class BlockchainBlockHeaderBuilder(Stream blockStream)
     {
         var previousBlockHashBytes = await ReadInfo(BlockchainBlockHeaderSizes.PreviousBlockHash);
         
-        _previousBlockHash = BitConverter.ToString(previousBlockHashBytes);
+        _previousBlockHash = BytesHelper.BytesToString(previousBlockHashBytes);
     }
     
     private async Task WithMerkleRootAsync()
     {
         var merkleRoot = await ReadInfo(BlockchainBlockHeaderSizes.MerkleRoot);
         
-        _merkleRoot = BitConverter.ToString(merkleRoot);
+        _merkleRoot = BytesHelper.BytesToString(merkleRoot);
     }
     
     private async Task WithTimestampAsync()
@@ -87,7 +87,7 @@ internal class BlockchainBlockHeaderBuilder(Stream blockStream)
         // Little-Indian
         Array.Reverse(bitsBytes);
         
-        _bits = BitConverter.ToString(bitsBytes);
+        _bits = BytesHelper.BytesToString(bitsBytes);
     }
     
     private async Task WithNonceAsync()
