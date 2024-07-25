@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace BlockchainBlockParser.CompactSize;
 
 public static class CompactSizeHelper
@@ -17,10 +15,8 @@ public static class CompactSizeHelper
         }
 
         var countBytesSize = Convert.ToInt32(Math.Pow(2, countOrSizeType - (int)CompactSizeType.FC));
-        var countBytes = new byte[CountCompactSizeBytesFromType(CompactSizeType.FF)];
-        var resultSize = await blockStream.ReadAsync(countBytes, 0, countBytesSize);
-        if (resultSize != countBytesSize) throw new ValidationException();
-        dataStream.Write(countBytes);
+        var countBytes = await BytesHelper.ReadInfoAsync(dataStream, countBytesSize);
+        
         
         if (!BitConverter.IsLittleEndian) // by default data stored in Little-Indian
             Array.Reverse(countBytes);

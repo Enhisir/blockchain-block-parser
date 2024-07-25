@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
 using BlockchainBlockParser.CompactSize;
 
 namespace BlockchainBlockParser.Transaction.Input;
@@ -28,7 +27,7 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
     
     private async Task WithTxIdAndVoutAsync()
     {
-        var begin = await ReadInfo(InputSizes.Txid + InputSizes.Vout);
+        var begin = await BytesHelper.ReadInfoAsync(blockStream, InputSizes.Txid + InputSizes.Vout);
         await _inputStream.WriteAsync(begin);
     }
 
@@ -37,13 +36,13 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
         var scriptSigSize = await CompactSizeHelper.ParseAsync(blockStream);
         await _inputStream.WriteAsync(scriptSigSize.RawData);
         
-        var scriptSigBytes = await ReadInfo(scriptSigSize.Count);
+        var scriptSigBytes = await BytesHelper.ReadInfoAsync(blockStream, scriptSigSize.Count);
         await _inputStream.WriteAsync(scriptSigBytes);
     }
     
     private async Task WithSequenceAsync()
     {
-        var sequenceBytes = await ReadInfo(InputSizes.Sequence);
+        var sequenceBytes = await BytesHelper.ReadInfoAsync(blockStream, InputSizes.Sequence);
         await _inputStream.WriteAsync(sequenceBytes);
     }
 
@@ -52,17 +51,7 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
         var data = _inputStream.ToArray();
         return new Input()
         {
-            Hash = BytesHelper.BytesToString(BytesHelper.DoubleHash(data)),
             RawData = data.ToImmutableList()
         };
-    }
-    
-    private async Task<byte[]> ReadInfo(long size)
-    {
-        var resultBytes = new byte[size];
-        var resultSize = await blockStream.ReadAsync(resultBytes);
-        
-        if (resultSize != size) throw new ValidationException();
-        return resultBytes;
     }
 }
