@@ -11,6 +11,6 @@
 * block-<хэш блока>-transactions.csv представляет собой список транзакций.
 
 
-***Подробнее про структуру блока Blockchain и Bitcoin
+*** Подробнее про структуру блока Blockchain и Bitcoin
 * https://learnmeabitcoin.com/ [ENG] - Блог о BTC и его техническом устройстве с документацией, а также примерами.
 * https://habr.com/ru/articles/319868/ - цикл статей на Хабре
