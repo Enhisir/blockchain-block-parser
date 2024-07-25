@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 
 namespace BlockchainBlockParser;
@@ -15,4 +16,13 @@ public static class BytesHelper
         => BitConverter.ToString(data)
             .Replace("-", "")
             .ToLower();
+    
+    public static async Task<byte[]> ReadInfoAsync(Stream byteStream, long size)
+    {
+        var resultBytes = new byte[size];
+        var resultSize = await byteStream.ReadAsync(resultBytes);
+        
+        if (resultSize != size) throw new ValidationException();
+        return resultBytes;
+    }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using BlockchainBlockParser.CompactSize;
 
@@ -7,7 +8,7 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
 {
     private readonly MemoryStream _inputStream = new();
 
-    public async Task<Input> BuildDefault()
+    public async Task<Input> BuildDefaultAsync()
     {
         await WithTxIdAndVoutAsync();
         await WithScriptSigAsync();
@@ -17,12 +18,12 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
     
     public void Dispose()
     {
-        blockStream.Dispose();
+        _inputStream.Dispose();
     }
 
     public ValueTask DisposeAsync()
     {
-        return blockStream.DisposeAsync();
+        return _inputStream.DisposeAsync();
     }
     
     private async Task WithTxIdAndVoutAsync()
@@ -51,8 +52,8 @@ public class InputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
         var data = _inputStream.ToArray();
         return new Input()
         {
-            Hash = BytesHelper.BytesToString(BytesHelper.DoubleHash(data, reverse: true)),
-            RawData = data
+            Hash = BytesHelper.BytesToString(BytesHelper.DoubleHash(data)),
+            RawData = data.ToImmutableList()
         };
     }
     

@@ -11,4 +11,10 @@
       <ProjectReference Include="..\BlockchainBlockParser\BlockchainBlockParser.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="00000000000005b2a3eb689758e3dba709d1af596f03175e965212701df4aa26.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

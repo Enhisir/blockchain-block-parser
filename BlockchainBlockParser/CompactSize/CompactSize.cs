@@ -7,7 +7,7 @@ public readonly struct CompactSize
     
     public long Count { get; init; }
     
-    public int Size => 1 + CompactSizeHelper.CountCompactSizeBytesFromType(SizeType);
+    public int Size => CompactSizeHelper.CountCompactSizeBytesFromType(SizeType);
     
     public byte[] RawData { get; init; }
 }

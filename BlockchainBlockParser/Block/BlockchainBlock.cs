@@ -5,16 +5,17 @@ namespace BlockchainBlockParser.Block;
 
 public class BlockchainBlock
 {
-    public int Size => Header.Size + TransactionCount.Size;
-    // 32 bytes, calculated on client
-    public string Hash { get; init; } = null!;
-
-    // 80 bytes
     public BlockchainBlockHeader Header { get; init; } = null!;
     
     public CompactSize.CompactSize TransactionCount { get; init; }
     
-    public ImmutableList<string> Transactions { get; init; } = null!;
+    public ImmutableList<Transaction.Transaction> Transactions { get; init; } = null!;
 
-    public string CoinbaseTransaction => Transactions.First(); // remake with Validation Exception Fault
+    public Transaction.Transaction CoinbaseTransaction => Transactions.First();
+    
+    public string Hash => Header.Hash;
+
+    public int Size => Header.Size
+                       + TransactionCount.Size
+                       + Transactions.Sum(tx => tx.Size);
 }

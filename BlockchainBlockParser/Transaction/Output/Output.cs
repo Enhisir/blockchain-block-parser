@@ -1,10 +1,14 @@
+using System.Collections.Immutable;
+
 namespace BlockchainBlockParser.Transaction.Output;
 
 public class Output
 {
-    public string Hash { get; init; } = null!;
+    // TODO: refactor, add Amount and other stuff
     
-    public byte[] RawData { get; init; } = null!;
+    public string Hash { get; init; } = null!;
 
-    public int Size => RawData.Length;
+    public ImmutableList<byte> RawData { get; init; } = null!;
+
+    public int Size => RawData.Count;
 }

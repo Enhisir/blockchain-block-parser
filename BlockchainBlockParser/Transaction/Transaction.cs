@@ -1,13 +1,11 @@
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlockchainBlockParser.Transaction;
 
 public class Transaction
 {
-    public int Size => TransactionSizes.Version
-                       + InputCount.Size
-                       + Inputs.Select(i => i.Size).Sum()
-                       + TransactionSizes.Locktime;
+    [Length(32, 32)] public string Hash { get; init; } = null!;
     
     public int Version { get; init; }
     
@@ -19,5 +17,14 @@ public class Transaction
     
     public ImmutableList<Output.Output> Outputs { get; init; } = null!;
     
-    public int Locktime { get; init; }
+    public uint Locktime { get; init; }
+
+    public ImmutableList<byte> RawData { get; init; } = null!;
+
+    public int Size => RawData.Count;
+
+    /*public int Size => TransactionSizes.Version
+                       + InputCount.Size
+                       + Inputs.Select(i => i.Size).Sum()
+                       + TransactionSizes.Locktime;*/
 }

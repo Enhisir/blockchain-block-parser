@@ -4,6 +4,8 @@ namespace BlockchainBlockParser.Header;
 
 public record BlockchainBlockHeader
 {
+    [Length(32, 32)] public string Hash { get; init; } = null!;
+    
     public int Size => BlockchainBlockHeaderSizes.Total;
     
     public int Version { get; init; }
@@ -15,7 +17,7 @@ public record BlockchainBlockHeader
     // unix-time timestamp
     public DateTime Timestamp { get; init; }
     
-    [Length(4, 4)] public string Bits { get; init; } = null!;
+    public uint Bits { get; init; }
     
     public uint Nonce { get; init; }
 }

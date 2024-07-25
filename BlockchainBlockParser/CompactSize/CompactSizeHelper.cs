@@ -22,8 +22,8 @@ public static class CompactSizeHelper
         if (resultSize != countBytesSize) throw new ValidationException();
         dataStream.Write(countBytes);
         
-        // Little-Indian
-        Array.Reverse(countBytes);
+        if (!BitConverter.IsLittleEndian) // by default data stored in Little-Indian
+            Array.Reverse(countBytes);
 
         return new CompactSize()
         {
@@ -34,5 +34,7 @@ public static class CompactSizeHelper
     }
 
     public static int CountCompactSizeBytesFromType(CompactSizeType type) 
-        => Convert.ToInt32(Math.Pow(2, type - CompactSizeType.FC));
+        => type is CompactSizeType.FC 
+            ? 1 
+            : 1 + Convert.ToInt32(Math.Pow(2, type - CompactSizeType.FC));
 }

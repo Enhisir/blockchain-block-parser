@@ -1,11 +1,16 @@
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
-using BlockchainBlockParser.Header;
+using BlockchainBlockParser.CompactSize;
+using BlockchainBlockParser.Transaction.Input;
+using BlockchainBlockParser.Transaction.Output;
 
 namespace BlockchainBlockParser.Transaction;
 
 public class TransactionBuilder(Stream blockStream)
 {
+    private readonly long _previousPosition = blockStream.Position;
+
+    private byte[]? _rawData;
+
     private int? _version;
 
     private CompactSize.CompactSize? _inputCount;
@@ -16,31 +21,90 @@ public class TransactionBuilder(Stream blockStream)
 
     private ImmutableList<Output.Output>? _outputs;
 
-    private int? _locktime;
-    
-    public Transaction Build()
+    private uint? _locktime;
+
+    public async Task<Transaction> BuildDefaultAsync()
     {
+        await WithVersionAsync();
+        await WithInputsAsync();
+        await WithOutputsAsync();
+        await WithLocktimeAsync();
+        await WithRawDataAsync();
         
+        return Build();
+    }
+    
+    private Transaction Build()
+    {
+        var hashString = BytesHelper.BytesToString(BytesHelper.DoubleHash(_rawData!));
+        
+        return new Transaction()
+        {
+            Hash = hashString,
+            Version = _version!.Value,
+            InputCount = _inputCount!.Value,
+            Inputs = _inputs!,
+            OutputCount = _outputCount!.Value,
+            Outputs = _outputs!,
+            Locktime = _locktime!.Value,
+            RawData = _rawData!.ToImmutableList()
+        };
     }
     
     private async Task WithVersionAsync()
     {
-        var versionBytes = await ReadInfo(TransactionSizes.Version);
-
-        // Little-Indian.
-        // Learn more on https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/how-to-convert-a-byte-array-to-an-int
-        Array.Reverse(versionBytes);
+        var versionBytes = await BytesHelper.ReadInfoAsync(blockStream, TransactionSizes.Version);
+        
+        if (!BitConverter.IsLittleEndian) // by default data stored in Little-Indian
+            Array.Reverse(versionBytes);
         
         _version = BitConverter.ToInt32(versionBytes);
     }
 
-    
-    private async Task<byte[]> ReadInfo(long size)
+    private async Task WithInputsAsync()
     {
-        var resultBytes = new byte[size];
-        var resultSize = await blockStream.ReadAsync(resultBytes);
+        var inputCount = await CompactSizeHelper.ParseAsync(blockStream);
+
+        var inputs = new Input.Input[inputCount.Count];
+        for (var i = 0; i < inputCount.Count; i++)
+        {
+            await using var builder = new InputBuilder(blockStream);
+            inputs[i] = await builder.BuildDefaultAsync();
+        }
+
+        _inputCount = inputCount;
+        _inputs = inputs.ToImmutableList();
+    }
+    
+    private async Task WithOutputsAsync()
+    {
+        var outputCount = await CompactSizeHelper.ParseAsync(blockStream);
+
+        var outputs = new Output.Output[outputCount.Count];
+        for (var i = 0; i < outputCount.Count; i++)
+        {
+            await using var builder = new OutputBuilder(blockStream);
+            outputs[i] = await builder.BuildDefaultAsync();
+        }
+
+        _outputCount = outputCount;
+        _outputs = outputs.ToImmutableList();
+    }
+
+    private async Task WithLocktimeAsync()
+    {
+        var locktimeBytes = await BytesHelper.ReadInfoAsync(blockStream, TransactionSizes.Locktime);
         
-        if (resultSize != size) throw new ValidationException();
-        return resultBytes;
+        if (!BitConverter.IsLittleEndian) // by default data stored in Little-Indian
+            Array.Reverse(locktimeBytes);
+
+        _locktime = BitConverter.ToUInt32(locktimeBytes);
+    }
+
+    private async Task WithRawDataAsync()
+    {
+        var size = blockStream.Position - _previousPosition;
+        blockStream.Position = _previousPosition;
+        _rawData = await BytesHelper.ReadInfoAsync(blockStream, size);
     }
 }

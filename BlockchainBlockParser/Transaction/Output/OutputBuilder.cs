@@ -1,6 +1,6 @@
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using BlockchainBlockParser.CompactSize;
-using BlockchainBlockParser.Transaction.Input;
 
 namespace BlockchainBlockParser.Transaction.Output;
 
@@ -8,7 +8,7 @@ public class OutputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
 {
     private readonly MemoryStream _inputStream = new();
 
-    public async Task<Output> BuildDefault()
+    public async Task<Output> BuildDefaultAsync()
     {
         await WithAmountAsync();
         await WithScriptPubKeyAsync();
@@ -17,12 +17,12 @@ public class OutputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
     
     public void Dispose()
     {
-        blockStream.Dispose();
+        _inputStream.Dispose();
     }
 
     public ValueTask DisposeAsync()
     {
-        return blockStream.DisposeAsync();
+        return _inputStream.DisposeAsync();
     }
     
     private async Task WithAmountAsync()
@@ -45,8 +45,8 @@ public class OutputBuilder(Stream blockStream) : IDisposable, IAsyncDisposable
         var data = _inputStream.ToArray();
         return new Output()
         {
-            Hash = BytesHelper.BytesToString(BytesHelper.DoubleHash(data, reverse: true)),
-            RawData = data
+            Hash = BytesHelper.BytesToString(BytesHelper.DoubleHash(data)),
+            RawData = data.ToImmutableList()
         };
     }
     
